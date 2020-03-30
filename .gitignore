@@ -1,0 +1,10 @@
+input_vm/*
+.vscode/*
+__pycache__/*
+output/*
+*.pyc
+Program/input_vm/*
+Program/.vscode/*
+Program/__pycache__/*
+Program/output/*
+Program/*.pyc
