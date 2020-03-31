@@ -40,7 +40,7 @@ class Schedule:
             self.WriteAllECSLog()  # 输出文件
             gl.set_value('NowDate',gl.get_value('NowDate')+datetime.timedelta(days=1))
         Final = self.AllEarnMoney - self.AllCPUCost - self.AllBuyCost - self.AllLoseCost
-        info1 = " Maintenance Cost\t Freight Cost \t Lose Cost \t Income Cost \t Profit"
+        info1 = " Maintenance Cost\t Freight Cost \t Lose Cost \t Income \t Profit"
         info2 = " %d \t\t %d \t\t %d \t %d \t %d"%(self.AllCPUCost,self.AllBuyCost,self.AllLoseCost,self.AllEarnMoney,Final)
         info3 = "Final Earn Rate: "+ str((Final)/(self.AllCPUCost + self.AllBuyCost + self.AllLoseCost))
         print(info1)
