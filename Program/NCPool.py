@@ -172,9 +172,19 @@ class NCPool:
             # 要判断一下新旧版块是否相同，相同就不用移动了
             # 因此self.NCResource[Type]["CanUseMemory"]可能会产生负数，但是不影响整体结果
             if NewECS.NC.type == PlaceNC.type:
+                # 不需要移动，输出当前的位置
+                gl.get_value('OP').writevm((gl.get_value('NowDate'),NewECS.name,NewECS.status,NewECS.NC.NCid,NewECS.Type,NewECS.CPU,NewECS.Memory,NewECS.createtime,"\\N" if NewECS.releasetime == datetime.datetime.strptime("2099-12-31 00:00:00",'%Y-%m-%d %H:%M:%S').date() else NewECS.releasetime))
                 return None,NewECS.Income
             else:
-                self.release1Vm(NewECS)
+                # 需要移动
+                # 此时先要先判断一下要移动去的地方有没有资源，要是没有就不移动了
+                OldNC = NewECS.NC
+                if PlaceNC.create1Vm(NewECS) == True:
+                    OldNC.release1Vm(NewECS)
+                    NewECS.NC = PlaceNC
+                    #self.release1Vm(NewECS,False)
+                else:
+                    return NewECS,NewECS.Income
         if PlaceNC != None and PlaceNC.create1Vm(NewECS) == True:
             # 物理主机中分配资源成功，从资源池中再次进行记录
             NewECS.status = "running"
@@ -188,13 +198,15 @@ class NCPool:
         return NewECS,NewECS.Income
 
 
-    def release1Vm(self,VM):
+    def release1Vm(self,VM,output = True):
         VM.status = "release"
         VM.NC.release1Vm(VM)
 
         # 物理主机回收算法
         # 释放日志
-        gl.get_value('OP').writevm((gl.get_value('NowDate'),VM.name,VM.status,VM.NC.NCid,VM.Type,VM.CPU,VM.Memory,VM.createtime,VM.releasetime))
+        if output ==False:
+            return
+        gl.get_value('OP').writevm((gl.get_value('NowDate'),VM.name,VM.status,VM.NC.NCid,VM.Type,VM.CPU,VM.Memory,VM.createtime,"\\N" if VM.releasetime == datetime.datetime.strptime("2099-12-31 00:00:00",'%Y-%m-%d %H:%M:%S').date() else VM.releasetime))
 
     def Classify_ecs(self,EcsList):
         # 判断虚拟机型号，设定不同的物理主机

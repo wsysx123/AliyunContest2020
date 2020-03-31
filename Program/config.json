@@ -58,56 +58,47 @@
             "ecs.c1.large":{
                 "cpu":2,
                 "memory":4,
-                "incomePerHour":0.39,
-                "incomePerDay":18.72
+                "incomePerHour":0.39
             },
             "ecs.c1.xlarge":{
                 "cpu":4,
                 "memory":8,
-                "incomePerHour":0.78,
-                "incomePerDay":74.88
+                "incomePerHour":0.78
             },
             "ecs.c1.2xlarge":{
                 "cpu":8,
                 "memory":16,
-                "incomePerHour":1.56,
-                "incomePerDay":299.52
+                "incomePerHour":1.56
             },
             "ecs.g1.large":{
                 "cpu":2,
                 "memory":8,
-                "incomePerHour":0.5,
-                "incomePerDay":24
+                "incomePerHour":0.5
             },
             "ecs.g1.xlarge":{
                 "cpu":4,
                 "memory":16,
-                "incomePerHour":1,
-                "incomePerDay":96
+                "incomePerHour":1
             },
             "ecs.g1.2xlarge":{
                 "cpu":8,
                 "memory":32,
-                "incomePerHour":2,
-                "incomePerDay":384
+                "incomePerHour":2
             },
             "ecs.r1.large":{
                 "cpu":2,
                 "memory":16,
-                "incomePerHour":0.66,
-                "incomePerDay":31.68
+                "incomePerHour":0.66
             },
             "ecs.r1.xlarge":{
                 "cpu":4,
                 "memory":32,
-                "incomePerHour":1.33,
-                "incomePerDay":127.68
+                "incomePerHour":1.33
             },
             "ecs.r1.2xlarge":{
                 "cpu":8,
                 "memory":64,
-                "incomePerHour":2.65,
-                "incomePerDay":508.8
+                "incomePerHour":2.65
             }            
         }
     }    

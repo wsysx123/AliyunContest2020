@@ -47,10 +47,6 @@ class Schedule:
         print(info2)
         print(info3)
 
-    def sort_IncomePerday(self,ECS):
-        conf = Config("./config.json")
-        return conf.conf["ContestConfig"]["VM"][ECS["vmtype"]]["incomePerDay"]
-
     #读入今日新增虚机
     def AcceptNewECS(self):
         #读取现有所有机器
