@@ -14,9 +14,9 @@ class Schedule:
         self.NewVm = GetVm(Files)
         gl._init()
         gl.set_value('NowDate',self.NewVm.starttime)
-        gl.set_value('Debug',True)
-        self.NCPool = NCPool(gl.get_value('NowDate'))
+        #gl.set_value('Debug',True)
         gl.set_value('OP',writeCsv())
+        self.NCPool = NCPool(gl.get_value('NowDate'))
         self.VQ = VmQueue()        
         self.AllCPUCost = 0
         self.AllBuyCost = 0
@@ -40,10 +40,12 @@ class Schedule:
             self.WriteAllECSLog()  # 输出文件
             gl.set_value('NowDate',gl.get_value('NowDate')+datetime.timedelta(days=1))
         Final = self.AllEarnMoney - self.AllCPUCost - self.AllBuyCost - self.AllLoseCost
-        info1 = " Maintenance \t Freight \t Lose \t\t Income \t Profit"
-        info2 = " %d \t %d \t\t %d \t %d \t %d"%(self.AllCPUCost,self.AllBuyCost,self.AllLoseCost,self.AllEarnMoney,Final)
+        info1 = " Maintenance Cost\t Freight Cost \t Lose Cost \t Income Cost \t Profit"
+        info2 = " %d \t\t %d \t\t %d \t %d \t %d"%(self.AllCPUCost,self.AllBuyCost,self.AllLoseCost,self.AllEarnMoney,Final)
+        info3 = "Final Earn Rate: "+ str((Final)/(self.AllCPUCost + self.AllBuyCost + self.AllLoseCost))
         print(info1)
         print(info2)
+        print(info3)
 
     def sort_IncomePerday(self,ECS):
         conf = Config("./config.json")

@@ -40,6 +40,7 @@ class NCPool:
                     self.NCResource[NTRaw]["TotalMemory"] = NewNT.totalMemory + self.NCResource[NTRaw]["TotalMemory"]
                     self.NCResource[NTRaw]["Num"] = self.NCResource[NTRaw]["Num"] +1
                 self.MachineNum = self.MachineNum + 1
+                gl.get_value('OP').writenewnc((gl.get_value("NowDate"),NewNT.NCid,"running",NewNT.totalCPU,NewNT.totalMemory,NewNT.type,NewNT.totalCPU-NewNT.CanUseCPU,NewNT.totalMemory-NewNT.CanUseMemory,NewNT.createTime))
             self.CPUNum = self.CPUNum + self.NCResource[NTRaw]["TotalCPU"]
 
     def GetNCCanUseSum(self,type):
@@ -180,7 +181,7 @@ class NCPool:
             NewECS.NC = PlaceNC
         else:
             #物理机资源不够了，分配失败
-            self.LoseNum = self.LoseNum+1
+            self.LoseNum = self.LoseNum+NewECS.TypeA
             NewECS.status = "lose"
             NewECS.Income = 0
         
@@ -297,7 +298,7 @@ class NCPool:
                 break
         # 此处直接释放即可，因为处理的均为当日新机，还没有加入正式队列里
         for vm in loseVm:
-            self.LoseNum = self.LoseNum + 1
+            self.LoseNum = self.LoseNum + vm.TypeA
             ECSList.remove(vm)
 
         
@@ -346,6 +347,7 @@ class NCPool:
             self.NewResource["NT-1-2"]["CPU"] = self.NewResource["NT-1-2"]["CPU"] +NewNT.totalCPU
             self.NewResource["NT-1-2"]["Memory"] = self.NewResource["NT-1-2"]["Memory"] +NewNT.totalMemory            
             self.MachineNum = self.MachineNum+1
+            self.CPUNum = self.CPUNum + self.NCResource["NT-1-2"]["TotalCPU"]
             gl.get_value('OP').writenewnc((today,NewNT.NCid,NewNT.status,NewNT.totalCPU,NewNT.totalMemory,NewNT.type,NewNT.totalCPU-NewNT.CanUseCPU,NewNT.totalMemory-NewNT.CanUseMemory,NewNT.createTime))
     
     def AddNT2(self,today,num):
@@ -358,6 +360,7 @@ class NCPool:
             self.NewResource["NT-1-4"]["CPU"] = self.NewResource["NT-1-4"]["CPU"] +NewNT.totalCPU
             self.NewResource["NT-1-4"]["Memory"] = self.NewResource["NT-1-4"]["Memory"] +NewNT.totalMemory
             self.MachineNum = self.MachineNum+1
+            self.CPUNum = self.CPUNum + self.NCResource["NT-1-4"]["TotalCPU"]
             gl.get_value('OP').writenewnc((today,NewNT.NCid,NewNT.status,NewNT.totalCPU,NewNT.totalMemory,NewNT.type,NewNT.totalCPU-NewNT.CanUseCPU,NewNT.totalMemory-NewNT.CanUseMemory,NewNT.createTime))
     
     
@@ -371,6 +374,7 @@ class NCPool:
             self.NewResource["NT-1-8"]["CPU"] = self.NewResource["NT-1-8"]["CPU"] +NewNT.totalCPU
             self.NewResource["NT-1-8"]["Memory"] = self.NewResource["NT-1-8"]["Memory"] +NewNT.totalMemory
             self.MachineNum = self.MachineNum+1
+            self.CPUNum = self.CPUNum + self.NCResource["NT-1-8"]["TotalCPU"]
             gl.get_value('OP').writenewnc((today,NewNT.NCid,NewNT.status,NewNT.totalCPU,NewNT.totalMemory,NewNT.type,NewNT.totalCPU-NewNT.CanUseCPU,NewNT.totalMemory-NewNT.CanUseMemory,NewNT.createTime))
     
     
@@ -389,5 +393,4 @@ class NCPool:
             self.NewResource[NC.type]["CPU"] = self.NewResource[NC.type]["CPU"] - NC.totalCPU
             self.NewResource[NC.type]["Memory"] = self.NewResource[NC.type]["Memory"] - NC.totalMemory
             self.Pool[NC.type].append(NC)
-            self.CPUNum = self.CPUNum + NC.totalCPU
             self.NewBuyList.remove(NC)
