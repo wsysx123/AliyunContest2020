@@ -120,6 +120,7 @@ class NCPool:
                 for NC in self.Pool["NT-1-4"]:
                     if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
                         PlaceNC = NC
+                        gl.get_value("TodayWantUse")["NT-1-4"] = gl.get_value("TodayWantUse")["NT-1-4"]+NewECS.TypeB/96
                         break
                 DisPlan[1] = DisPlan[1] - NewECS.TypeB         
             elif DisPlan[0] >0:# 将1型虚机分配给1型主机
@@ -127,6 +128,7 @@ class NCPool:
                 for NC in self.Pool["NT-1-2"]:
                     if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
                         PlaceNC = NC
+                        gl.get_value("TodayWantUse")["NT-1-2"] = gl.get_value("TodayWantUse")["NT-1-2"]+NewECS.TypeB/64
                         break
         elif NewECS.TypeA==4:
             if DisPlan[2]>0:# 将2型虚机分配给2型主机
@@ -135,6 +137,7 @@ class NCPool:
                 for NC in self.Pool["NT-1-4"]:
                     if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
                         PlaceNC = NC
+                        gl.get_value("TodayWantUse")["NT-1-4"] = gl.get_value("TodayWantUse")["NT-1-4"]+NewECS.TypeB/64
                         break
         elif NewECS.TypeA==8:
             if C > NewECS.TypeB:
@@ -144,12 +147,14 @@ class NCPool:
                     for NC in self.Pool["NT-1-4"]:
                         if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
                             PlaceNC = NC
+                            gl.get_value("TodayWantUse")["NT-1-4"] = gl.get_value("TodayWantUse")["NT-1-4"]+NewECS.TypeB/32
                             break
                 elif DisPlan[4]>0:# 将3型虚机分配给3型主机
                     DisPlan[4] = DisPlan[4]- NewECS.TypeB
                     for NC in self.Pool["NT-1-8"]:
                         if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
                             PlaceNC = NC
+                            gl.get_value("TodayWantUse")["NT-1-8"] = gl.get_value("TodayWantUse")["NT-1-8"]+NewECS.TypeB/64
                             break
             else:
                 if DisPlan[4]>0:# 将3型虚机分配给3型主机
@@ -157,6 +162,7 @@ class NCPool:
                     for NC in self.Pool["NT-1-8"]:
                         if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
                             PlaceNC = NC
+                            gl.get_value("TodayWantUse")["NT-1-8"] = gl.get_value("TodayWantUse")["NT-1-8"]+NewECS.TypeB/64
                             break
                 elif DisPlan[3]>0:# 将3型虚机分配给2型主机
                     DisPlan[3] = DisPlan[3] - NewECS.TypeB
@@ -164,6 +170,7 @@ class NCPool:
                     for NC in self.Pool["NT-1-4"]:
                         if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
                             PlaceNC = NC
+                            gl.get_value("TodayWantUse")["NT-1-4"] = gl.get_value("TodayWantUse")["NT-1-4"]+NewECS.TypeB/32
                             break
             
         
@@ -264,7 +271,7 @@ class NCPool:
 
     # 线性规划无解时，断供某些机器
     def DeleteEcs(self,NewList):
-        delta = [0,0,0]# 新增的三种虚拟机型的台数
+        delta = [99999,99999,99999]# 当前主机剩余量/新增虚拟主机的需求量
         NT1,NT2,NT3 = self.SumT(NewList)
         # 当前主机剩余量/新增虚拟主机的需求量  越小则越紧缺
         if NT1 != 0:

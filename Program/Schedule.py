@@ -25,9 +25,14 @@ class Schedule:
         self.TodayEarnMoney = 0
         self.AllEarnMoney = 0
         self.AllBuyServerCost = 0
+        self.wantUseList = []
+        conf = Config("./config.json")
+        # 初始化保有量
+        gl.set_value("NCKeepNum",{"NT-1-2":conf.readNC("NT-1-2")["initNum"],"NT-1-4":conf.readNC("NT-1-4")["initNum"],"NT-1-8":conf.readNC("NT-1-8")["initNum"]}) 
 
     def run(self):
-        while self.NewVm.IsListNULL()==False:            
+        while self.NewVm.IsListNULL()==False:
+            gl.set_value("TodayWantUse",{"NT-1-2":0,"NT-1-4":0,"NT-1-8":0}) 
             print("Now Date:"+str(gl.get_value('NowDate')))
             self.NCPool.StartTodayNC(gl.get_value('NowDate'))  # 开启新的物理主机    
             self.NCPool.UpdateNCCanUseSum() # 更新当前的可用资源数据   
@@ -38,14 +43,30 @@ class Schedule:
             self.AllEarnMoney = self.AllEarnMoney + self.TodayEarnMoney # 总收益
             self.AddNC()           # 报备主机
             self.WriteAllECSLog()  # 输出文件
+            self.wantUseList.append(gl.get_value("TodayWantUse"))
+            self.cal_WantUse() # 更新每种机型的最低保有量
             gl.set_value('NowDate',gl.get_value('NowDate')+datetime.timedelta(days=1))
         Final = self.AllEarnMoney - self.AllCPUCost - self.AllBuyCost - self.AllLoseCost
-        info1 = " Maintenance Cost\t Freight Cost \t Lose Cost \t Income Cost \t Profit"
+        info1 = " Maintenance Cost\t Freight Cost \t Lose Cost \t Income \t Profit"
         info2 = " %d \t\t %d \t\t %d \t %d \t %d"%(self.AllCPUCost,self.AllBuyCost,self.AllLoseCost,self.AllEarnMoney,Final)
         info3 = "Final Earn Rate: "+ str((Final)/(self.AllCPUCost + self.AllBuyCost + self.AllLoseCost))
         print(info1)
         print(info2)
         print(info3)
+    
+    # 计算近十天的各个机型需求量，修订保底策略
+    def cal_WantUse(self):
+        lastpos = 15
+        if len(self.wantUseList)>16:
+            self.wantUseList.remove(self.wantUseList[0])
+        elif len(self.wantUseList)<=15:
+            lastpos = len(self.wantUseList) - 1
+        # 新增需求增速变大时，更新保有量
+        gl.get_value("NCKeepNum")["NT-1-2"] = max((self.wantUseList[lastpos]["NT-1-2"] - self.wantUseList[0]["NT-1-2"])*2,gl.get_value("NCKeepNum")["NT-1-2"])
+        gl.get_value("NCKeepNum")["NT-1-4"] = max((self.wantUseList[lastpos]["NT-1-4"] - self.wantUseList[0]["NT-1-4"])*2,gl.get_value("NCKeepNum")["NT-1-4"])
+        gl.get_value("NCKeepNum")["NT-1-8"] = max((self.wantUseList[lastpos]["NT-1-8"] - self.wantUseList[0]["NT-1-8"])*2,gl.get_value("NCKeepNum")["NT-1-8"])
+        print(self.wantUseList[lastpos])
+        print(gl.get_value("NCKeepNum"))
 
     def sort_IncomePerday(self,ECS):
         conf = Config("./config.json")
@@ -115,21 +136,21 @@ class Schedule:
 
     def AddNC(self):
         conf = Config("./config.json")
-        Num = conf.readNC("NT-1-2")["initNum"]
+        Num = gl.get_value("NCKeepNum")["NT-1-2"]
         Cpu = conf.readNC("NT-1-2")["maxCPU"]
         Mem = conf.readNC("NT-1-2")["maxMemory"]
         if (self.NCPool.NCResource["NT-1-2"]["CanUseCPU"] + self.NCPool.NewResource["NT-1-2"]["CPU"]<Num*Cpu or self.NCPool.NCResource["NT-1-2"]["CanUseMemory"] + self.NCPool.NewResource["NT-1-2"]["Memory"]<Num*Mem):
             CpuNeed = (Num*Cpu - self.NCPool.NCResource["NT-1-2"]["CanUseCPU"] - self.NCPool.NewResource["NT-1-2"]["CPU"])/64
             MemoryNeed = (Num*Mem - self.NCPool.NCResource["NT-1-2"]["CanUseMemory"]- self.NCPool.NewResource["NT-1-2"]["Memory"])/128
             self.NCPool.AddNT1(gl.get_value('NowDate'),max(math.ceil(CpuNeed),math.ceil(MemoryNeed)))
-        Num = conf.readNC("NT-1-4")["initNum"]
+        Num = gl.get_value("NCKeepNum")["NT-1-4"]
         Cpu = conf.readNC("NT-1-4")["maxCPU"]
         Mem = conf.readNC("NT-1-4")["maxMemory"]
         if (self.NCPool.NCResource["NT-1-4"]["CanUseCPU"] + self.NCPool.NewResource["NT-1-4"]["CPU"]<Num*Cpu or self.NCPool.NCResource["NT-1-4"]["CanUseMemory"] + self.NCPool.NewResource["NT-1-4"]["Memory"]<Num*Mem):
             CpuNeed = (Num*Cpu - self.NCPool.NCResource["NT-1-4"]["CanUseCPU"]- self.NCPool.NewResource["NT-1-4"]["CPU"])/96
             MemoryNeed = (Num*Mem - self.NCPool.NCResource["NT-1-4"]["CanUseMemory"] -self.NCPool.NewResource["NT-1-4"]["Memory"])/256
             self.NCPool.AddNT2(gl.get_value('NowDate'),max(math.ceil(CpuNeed),math.ceil(MemoryNeed)))
-        Num = conf.readNC("NT-1-8")["initNum"]
+        Num = gl.get_value("NCKeepNum")["NT-1-8"]
         Cpu = conf.readNC("NT-1-8")["maxCPU"]
         Mem = conf.readNC("NT-1-8")["maxMemory"]
         if (self.NCPool.NCResource["NT-1-8"]["CanUseCPU"] + self.NCPool.NewResource["NT-1-8"]["CPU"]<Num*Cpu or self.NCPool.NCResource["NT-1-8"]["CanUseMemory"] + self.NCPool.NewResource["NT-1-8"]["Memory"]<Num*Mem):

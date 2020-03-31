@@ -42,6 +42,12 @@ class NC:
     def release1Vm(self,Vm):
         self.CanUseCPU = self.CanUseCPU + Vm.CPU
         self.CanUseMemory = self.CanUseMemory + Vm.Memory
+        if self.type == "NT-1-2":
+            gl.get_value("TodayWantUse")["NT-1-2"] = gl.get_value("TodayWantUse")["NT-1-2"]-1/min(self.totalCPU/Vm.CPU,self.totalMemory/Vm.Memory)
+        elif self.type == "NT-1-4":
+            gl.get_value("TodayWantUse")["NT-1-4"] = gl.get_value("TodayWantUse")["NT-1-4"]-1/min(self.totalCPU/Vm.CPU,self.totalMemory/Vm.Memory)
+        elif self.type == "NT-1-8":
+            gl.get_value("TodayWantUse")["NT-1-8"] = gl.get_value("TodayWantUse")["NT-1-8"]-1/min(self.totalCPU/Vm.CPU,self.totalMemory/Vm.Memory)
         if Vm.TypeA == 2:#c1型
             self.c1Num = self.c1Num + Vm.TypeB * Vm.TypeA
             self.wantCNum =  self.wantCNum - 0.09
