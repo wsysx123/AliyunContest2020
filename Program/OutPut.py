@@ -4,17 +4,17 @@ import globalvar as gl
 
 class writeCsv:
     def __init__(self):
-        vm =open('./output/vm.csv','w+',newline='')
+        vm =open('../output/vm.csv','w+',newline='')
         writer=csv.writer(vm)
         writer.writerow(('outputDate','vmId','status','ncId','vmType','cpu','memory','createTime','releaseTime'))
         vm.close()
 
-        nc =open('./output/nc.csv','w+',newline='')
+        nc =open('../output/nc.csv','w+',newline='')
         writer=csv.writer(nc)
         writer.writerow(('outputDate','ncId','status','totalCpu','tocalMemory','machineType','usedCpu','usedMemory','createTime'))
         nc.close()
 
-        newnc =open('./output/new_nc.csv','w+',newline='')
+        newnc =open('../output/new_nc.csv','w+',newline='')
         writer=csv.writer(newnc)
         writer.writerow(('outputDate','ncId','status','totalCpu','tocalMemory','machineType','usedCpu','usedMemory','createTime'))
         newnc.close()
@@ -37,7 +37,7 @@ class writeCsv:
 
     # 'outputDate','vmId','status','ncId','vmType','cpu','memory','createTime','releaseTime'
     def writevm(self,data):
-        vm =open('./output/vm.csv','a+',newline='')
+        vm =open('../output/vm.csv','a+',newline='')
         writer=csv.writer(vm)
         if(data!=None):
             writer.writerow(data)
@@ -46,7 +46,7 @@ class writeCsv:
 
     # 'outputDate','ncId','status','totalCpu','tocalMemory','machineType','usedCpu','usedMemory','createTime'
     def writenc(self,data):
-        nc =open('./output/nc.csv','a+',newline='')
+        nc =open('../output/nc.csv','a+',newline='')
         writer=csv.writer(nc)
         if(data!=None):
             writer.writerow(data)
@@ -55,7 +55,7 @@ class writeCsv:
 
     # 'outputDate','ncId','status','totalCpu','tocalMemory','machineType','usedCpu','usedMemory','createTime'
     def writenewnc(self,data):
-        newnc =open('./output/new_nc.csv','a+',newline='')
+        newnc =open('../output/new_nc.csv','a+',newline='')
         writer=csv.writer(newnc)
         if(data!=None):
             writer.writerow(data)

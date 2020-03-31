@@ -1,4 +1,4 @@
-input_vm/*.txt
+input_vm/*.csv
 .vscode/*
 __pycache__/*
 output/*
