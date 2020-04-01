@@ -66,8 +66,8 @@ class Schedule:
         gl.get_value("NCKeepNum")["NT-1-2"] = min(gl.get_value("NCKeepNum")["NT-1-2"]*2,max((self.wantUseList[lastpos]["NT-1-2"] - self.wantUseList[0]["NT-1-2"])*1,gl.get_value("NCKeepNum")["NT-1-2"]))
         gl.get_value("NCKeepNum")["NT-1-4"] = min(gl.get_value("NCKeepNum")["NT-1-4"]*2,max((self.wantUseList[lastpos]["NT-1-4"] - self.wantUseList[0]["NT-1-4"])*6,gl.get_value("NCKeepNum")["NT-1-4"]))
         gl.get_value("NCKeepNum")["NT-1-8"] = min(gl.get_value("NCKeepNum")["NT-1-8"]*2,max((self.wantUseList[lastpos]["NT-1-8"] - self.wantUseList[0]["NT-1-8"])*2,gl.get_value("NCKeepNum")["NT-1-8"]))
-        print(self.wantUseList[lastpos])
-        print(gl.get_value("NCKeepNum"))
+        # print(self.wantUseList[lastpos])
+        # print(gl.get_value("NCKeepNum"))
 
     #读入今日新增虚机
     def AcceptNewECS(self):
