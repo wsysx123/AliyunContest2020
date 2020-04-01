@@ -42,7 +42,7 @@
                 "supportProductType":[
                     "ecs.g1","ecs.c1","ecs.r1"
                 ],
-                "initNum":50
+                "initNum":200
             },
             "NT-1-8":{
                 "maxCPU":104,
