@@ -63,8 +63,8 @@ class Schedule:
         elif len(self.wantUseList)<=15:
             lastpos = len(self.wantUseList) - 1
         # 新增需求增速变大时，更新保有量
-        gl.get_value("NCKeepNum")["NT-1-2"] = max((self.wantUseList[lastpos]["NT-1-2"] - self.wantUseList[0]["NT-1-2"])*2,gl.get_value("NCKeepNum")["NT-1-2"])
-        gl.get_value("NCKeepNum")["NT-1-4"] = max((self.wantUseList[lastpos]["NT-1-4"] - self.wantUseList[0]["NT-1-4"])*2,gl.get_value("NCKeepNum")["NT-1-4"])
+        gl.get_value("NCKeepNum")["NT-1-2"] = max((self.wantUseList[lastpos]["NT-1-2"] - self.wantUseList[0]["NT-1-2"])*1,gl.get_value("NCKeepNum")["NT-1-2"])
+        gl.get_value("NCKeepNum")["NT-1-4"] = max((self.wantUseList[lastpos]["NT-1-4"] - self.wantUseList[0]["NT-1-4"])*5,gl.get_value("NCKeepNum")["NT-1-4"])
         gl.get_value("NCKeepNum")["NT-1-8"] = max((self.wantUseList[lastpos]["NT-1-8"] - self.wantUseList[0]["NT-1-8"])*2,gl.get_value("NCKeepNum")["NT-1-8"])
         print(self.wantUseList[lastpos])
         print(gl.get_value("NCKeepNum"))
