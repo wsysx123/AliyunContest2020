@@ -34,9 +34,9 @@ class Schedule:
             self.NCPool.SortPool()
             self.AcceptNewECS()             # 处理新的虚拟主机
             self.ReleaseTodayECS()          # 释放虚拟主机
-            self.Cal_Day_Money()            # 计算金额
             self.AllEarnMoney = self.AllEarnMoney + self.TodayEarnMoney # 总收益
             self.AddNC()           # 报备主机
+            self.Cal_Day_Money()            # 计算金额,要放在报备后面，否则今日新报备主机的运营费用会减小
             self.WriteAllECSLog()  # 输出文件
             gl.set_value('NowDate',gl.get_value('NowDate')+datetime.timedelta(days=1))
         Final = self.AllEarnMoney - self.AllCPUCost - self.AllBuyCost - self.AllLoseCost

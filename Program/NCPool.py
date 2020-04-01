@@ -359,7 +359,7 @@ class NCPool:
             self.NewResource["NT-1-2"]["CPU"] = self.NewResource["NT-1-2"]["CPU"] +NewNT.totalCPU
             self.NewResource["NT-1-2"]["Memory"] = self.NewResource["NT-1-2"]["Memory"] +NewNT.totalMemory            
             self.MachineNum = self.MachineNum+1
-            self.CPUNum = self.CPUNum + self.NCResource["NT-1-2"]["TotalCPU"]
+            self.CPUNum = self.CPUNum + NewNT.totalCPU
             gl.get_value('OP').writenewnc((today,NewNT.NCid,NewNT.status,NewNT.totalCPU,NewNT.totalMemory,NewNT.type,NewNT.totalCPU-NewNT.CanUseCPU,NewNT.totalMemory-NewNT.CanUseMemory,NewNT.createTime))
     
     def AddNT2(self,today,num):
@@ -372,7 +372,7 @@ class NCPool:
             self.NewResource["NT-1-4"]["CPU"] = self.NewResource["NT-1-4"]["CPU"] +NewNT.totalCPU
             self.NewResource["NT-1-4"]["Memory"] = self.NewResource["NT-1-4"]["Memory"] +NewNT.totalMemory
             self.MachineNum = self.MachineNum+1
-            self.CPUNum = self.CPUNum + self.NCResource["NT-1-4"]["TotalCPU"]
+            self.CPUNum = self.CPUNum + NewNT.totalCPU
             gl.get_value('OP').writenewnc((today,NewNT.NCid,NewNT.status,NewNT.totalCPU,NewNT.totalMemory,NewNT.type,NewNT.totalCPU-NewNT.CanUseCPU,NewNT.totalMemory-NewNT.CanUseMemory,NewNT.createTime))
     
     
@@ -386,7 +386,7 @@ class NCPool:
             self.NewResource["NT-1-8"]["CPU"] = self.NewResource["NT-1-8"]["CPU"] +NewNT.totalCPU
             self.NewResource["NT-1-8"]["Memory"] = self.NewResource["NT-1-8"]["Memory"] +NewNT.totalMemory
             self.MachineNum = self.MachineNum+1
-            self.CPUNum = self.CPUNum + self.NCResource["NT-1-8"]["TotalCPU"]
+            self.CPUNum = self.CPUNum + NewNT.totalCPU
             gl.get_value('OP').writenewnc((today,NewNT.NCid,NewNT.status,NewNT.totalCPU,NewNT.totalMemory,NewNT.type,NewNT.totalCPU-NewNT.CanUseCPU,NewNT.totalMemory-NewNT.CanUseMemory,NewNT.createTime))
     
     
