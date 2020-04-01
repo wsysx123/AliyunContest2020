@@ -63,6 +63,7 @@ class writeCsv:
 
     # 'outputDate','BuyServerCost','CPUCost','BuyCost','LoseCost','EarnMoney'
     def writeMoney(self,data):
+        # print(data)
         # Money =open('./output/Money.csv','a+',newline='')
         # writer=csv.writer(Money)
         # if(data!=None):

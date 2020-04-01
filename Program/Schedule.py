@@ -11,18 +11,18 @@ import globalvar as gl
 
 class Schedule:
     def __init__(self,Files):
+        gl._init()        
         self.NewVm = GetVm(Files)
-        gl._init()
         gl.set_value('NowDate',self.NewVm.starttime)
         #gl.set_value('Debug',True)
         gl.set_value('OP',writeCsv())
+        gl.set_value('LastDate',None)
         self.NCPool = NCPool(gl.get_value('NowDate'))
         self.VQ = VmQueue()        
         self.AllCPUCost = 0
         self.AllBuyCost = 0
         self.AllLoseCost = 0
         self.NowMachineNum = 0
-        self.TodayEarnMoney = 0
         self.AllEarnMoney = 0
         self.AllBuyServerCost = 0
         self.wantUseList = []
@@ -31,18 +31,19 @@ class Schedule:
         gl.set_value("NCKeepNum",{"NT-1-2":conf.readNC("NT-1-2")["initNum"],"NT-1-4":conf.readNC("NT-1-4")["initNum"],"NT-1-8":conf.readNC("NT-1-8")["initNum"]}) 
 
     def run(self):
-        while self.NewVm.IsListNULL()==False:
-            gl.set_value("TodayWantUse",{"NT-1-2":0,"NT-1-4":0,"NT-1-8":0}) 
+        while self.NewVm.IsListNULL()==False or gl.get_value('NowDate') <= gl.get_value('LastDate') :     
+            gl.set_value("TodayWantUse",{"NT-1-2":0,"NT-1-4":0,"NT-1-8":0})        
             print("Now Date:"+str(gl.get_value('NowDate')))
-            self.NCPool.StartTodayNC(gl.get_value('NowDate'))  # 开启新的物理主机    
-            self.NCPool.UpdateNCCanUseSum() # 更新当前的可用资源数据   
-            self.NCPool.SortPool()
-            self.AcceptNewECS()             # 处理新的虚拟主机
-            self.ReleaseTodayECS()          # 释放虚拟主机
-            self.Cal_Day_Money()            # 计算金额
-            self.AllEarnMoney = self.AllEarnMoney + self.TodayEarnMoney # 总收益
-            self.AddNC()           # 报备主机
-            self.WriteAllECSLog()  # 输出文件
+            gl.set_value('TodayEarnMoney',0)
+            self.NCPool.StartTodayNC(gl.get_value('NowDate'))           # 开启新的物理主机    
+            self.NCPool.UpdateNCCanUseSum()                             # 更新当前的可用资源数据   
+            #self.NCPool.SortPool()
+            self.AcceptNewECS()                                         # 处理新的虚拟主机
+            self.ReleaseTodayECS()                                      # 释放虚拟主机
+            self.AllEarnMoney = self.AllEarnMoney + gl.get_value('TodayEarnMoney') # 总收益
+            self.AddNC()                                                # 报备主机
+            self.Cal_Day_Money()                    # 计算金额,要放在报备后面，否则今日新报备主机的运营费用会减小
+            self.WriteAllECSLog()                                       # 输出文件
             self.wantUseList.append(gl.get_value("TodayWantUse"))
             self.cal_WantUse() # 更新每种机型的最低保有量
             gl.set_value('NowDate',gl.get_value('NowDate')+datetime.timedelta(days=1))
@@ -67,10 +68,6 @@ class Schedule:
         gl.get_value("NCKeepNum")["NT-1-8"] = max((self.wantUseList[lastpos]["NT-1-8"] - self.wantUseList[0]["NT-1-8"])*2,gl.get_value("NCKeepNum")["NT-1-8"])
         print(self.wantUseList[lastpos])
         print(gl.get_value("NCKeepNum"))
-
-    def sort_IncomePerday(self,ECS):
-        conf = Config("./config.json")
-        return conf.conf["ContestConfig"]["VM"][ECS["vmtype"]]["incomePerDay"]
 
     #读入今日新增虚机
     def AcceptNewECS(self):
@@ -104,12 +101,13 @@ class Schedule:
         loseVm = []
         # 依次给每个机器安排资源
         for NewECS in EcsListTmp:
-            NewVM,EarnMoney = self.NCPool.create1Vm(NewECS,DisAns)#给这一块ECS分配内存
-            self.TodayEarnMoney = self.TodayEarnMoney + EarnMoney
+            NewVM = self.NCPool.create1Vm(NewECS,DisAns)#给这一块ECS分配内存
+            
             if NewVM != None:
                 if NewVM.status == "running":#可以分配成功，计算收益
                     #self.gl.get_value('OP')writevm((gl.get_value('NowDate'),NewVM.name,NewVM.status,NewVM.NC.NCid,NewVM.Type,NewVM.CPU,NewVM.Memory,NewVM.createtime,NewVM.releasetime))
                     gl.get_value('OP').writevm((gl.get_value('NowDate'),NewVM.name,NewVM.status,NewVM.NC.NCid,NewVM.Type,NewVM.CPU,NewVM.Memory,NewVM.createtime,"\\N" if NewVM.releasetime == datetime.datetime.strptime("2099-12-31 00:00:00",'%Y-%m-%d %H:%M:%S').date() else NewVM.releasetime))
+                    gl.set_value('TodayEarnMoney',gl.get_value('TodayEarnMoney')+NewVM.Income)
                 else:#分配不成功，直接输出，正式答案里不输出
                     #self.VQ.delete(NewVM)#从现存队列中删除,删除以后队列自动向前移动，会漏数据
                     loseVm.append(NewVM)

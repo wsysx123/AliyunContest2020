@@ -122,6 +122,11 @@ class NCPool:
                         PlaceNC = NC
                         gl.get_value("TodayWantUse")["NT-1-4"] = gl.get_value("TodayWantUse")["NT-1-4"]+NewECS.TypeB/96
                         break
+                if PlaceNC == None:
+                    for NC in self.Pool["NT-1-2"]:
+                        if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
+                            PlaceNC = NC
+                            break
                 DisPlan[1] = DisPlan[1] - NewECS.TypeB         
             elif DisPlan[0] >0:# 将1型虚机分配给1型主机
                 DisPlan[0] = DisPlan[0] - NewECS.TypeB
@@ -130,6 +135,11 @@ class NCPool:
                         PlaceNC = NC
                         gl.get_value("TodayWantUse")["NT-1-2"] = gl.get_value("TodayWantUse")["NT-1-2"]+NewECS.TypeB/64
                         break
+                if PlaceNC == None:
+                    for NC in self.Pool["NT-1-4"]:
+                        if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
+                            PlaceNC = NC
+                            break
         elif NewECS.TypeA==4:
             if DisPlan[2]>0:# 将2型虚机分配给2型主机
                 DisPlan[2] = DisPlan[2] - NewECS.TypeB
@@ -149,6 +159,11 @@ class NCPool:
                             PlaceNC = NC
                             gl.get_value("TodayWantUse")["NT-1-4"] = gl.get_value("TodayWantUse")["NT-1-4"]+NewECS.TypeB/32
                             break
+                    if PlaceNC == None:
+                        for NC in self.Pool["NT-1-8"]:
+                            if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
+                                PlaceNC = NC
+                                break
                 elif DisPlan[4]>0:# 将3型虚机分配给3型主机
                     DisPlan[4] = DisPlan[4]- NewECS.TypeB
                     for NC in self.Pool["NT-1-8"]:
@@ -156,6 +171,11 @@ class NCPool:
                             PlaceNC = NC
                             gl.get_value("TodayWantUse")["NT-1-8"] = gl.get_value("TodayWantUse")["NT-1-8"]+NewECS.TypeB/64
                             break
+                    if PlaceNC == None:
+                        for NC in self.Pool["NT-1-4"]:
+                            if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
+                                PlaceNC = NC
+                                break
             else:
                 if DisPlan[4]>0:# 将3型虚机分配给3型主机
                     DisPlan[4] = DisPlan[4]- NewECS.TypeB
@@ -164,6 +184,11 @@ class NCPool:
                             PlaceNC = NC
                             gl.get_value("TodayWantUse")["NT-1-8"] = gl.get_value("TodayWantUse")["NT-1-8"]+NewECS.TypeB/64
                             break
+                    if PlaceNC == None:
+                        for NC in self.Pool["NT-1-4"]:
+                            if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
+                                PlaceNC = NC
+                                break
                 elif DisPlan[3]>0:# 将3型虚机分配给2型主机
                     DisPlan[3] = DisPlan[3] - NewECS.TypeB
                     self.Pool["NT-1-4"].sort(key=self.SortN4Pool_C,reverse=True)
@@ -172,27 +197,53 @@ class NCPool:
                             PlaceNC = NC
                             gl.get_value("TodayWantUse")["NT-1-4"] = gl.get_value("TodayWantUse")["NT-1-4"]+NewECS.TypeB/32
                             break
+                    if PlaceNC == None:
+                        for NC in self.Pool["NT-1-8"]:
+                            if NC.CanUseMemory > NewECS.Memory and NC.CanUseCPU >NewECS.CPU:
+                                PlaceNC = NC
+                                break
             
-        
-        # 该机器不是新机，为待移动机器，先释放之前的资源
-        if NewECS.NC != None:
-            # 要判断一下新旧版块是否相同，相同就不用移动了
-            # 因此self.NCResource[Type]["CanUseMemory"]可能会产生负数，但是不影响整体结果
-            if NewECS.NC.type == PlaceNC.type:
-                return None,NewECS.Income
+        if PlaceNC == None:
+            # 新的分配方案分配不到
+            if NewECS.NC == None:
+                # 之前也没分配成功过
+                self.LoseNum = self.LoseNum+NewECS.TypeA
+                NewECS.status = "lose"
+                NewECS.Income = 0
             else:
-                self.release1Vm(NewECS)
-        if PlaceNC != None and PlaceNC.create1Vm(NewECS) == True:
-            # 物理主机中分配资源成功，从资源池中再次进行记录
-            NewECS.status = "running"
-            NewECS.NC = PlaceNC
+                # 不需要移动，输出当前的位置
+                gl.get_value('OP').writevm((gl.get_value('NowDate'),NewECS.name,NewECS.status,NewECS.NC.NCid,NewECS.Type,NewECS.CPU,NewECS.Memory,NewECS.createtime,"\\N" if NewECS.releasetime == datetime.datetime.strptime("2099-12-31 00:00:00",'%Y-%m-%d %H:%M:%S').date() else NewECS.releasetime))
+                gl.set_value('TodayEarnMoney',gl.get_value('TodayEarnMoney')+NewECS.Income)
+                return None
         else:
-            #物理机资源不够了，分配失败
-            self.LoseNum = self.LoseNum+NewECS.TypeA
-            NewECS.status = "lose"
-            NewECS.Income = 0
+            if NewECS.NC != None:
+                # 该机器不是新机
+                # 要判断一下新旧版块是否相同，相同就不用移动了
+                # 因此self.NCResource[Type]["CanUseMemory"]可能会产生负数，但是不影响整体结果
+                if NewECS.NC.type == PlaceNC.type:
+                    # 不需要移动，输出当前的位置
+                    gl.get_value('OP').writevm((gl.get_value('NowDate'),NewECS.name,NewECS.status,NewECS.NC.NCid,NewECS.Type,NewECS.CPU,NewECS.Memory,NewECS.createtime,"\\N" if NewECS.releasetime == datetime.datetime.strptime("2099-12-31 00:00:00",'%Y-%m-%d %H:%M:%S').date() else NewECS.releasetime))
+                    gl.set_value('TodayEarnMoney',gl.get_value('TodayEarnMoney')+NewECS.Income)
+                    return None
+                else:
+                    # 需要移动
+                    # 此时先要先判断一下要移动去的地方有没有资源，要是没有就不移动了
+                    OldNC = NewECS.NC
+                    if PlaceNC.create1Vm(NewECS) == True:
+                        OldNC.release1Vm(NewECS)
+                        NewECS.NC = PlaceNC
+                    return NewECS
+            if PlaceNC != None and PlaceNC.create1Vm(NewECS) == True:
+                # 物理主机中分配资源成功，从资源池中再次进行记录
+                NewECS.status = "running"
+                NewECS.NC = PlaceNC
+            else:
+                #物理机资源不够了，分配失败
+                self.LoseNum = self.LoseNum+NewECS.TypeA
+                NewECS.status = "lose"
+                NewECS.Income = 0
         
-        return NewECS,NewECS.Income
+        return NewECS
 
 
     def release1Vm(self,VM):
@@ -201,7 +252,8 @@ class NCPool:
 
         # 物理主机回收算法
         # 释放日志
-        gl.get_value('OP').writevm((gl.get_value('NowDate'),VM.name,VM.status,VM.NC.NCid,VM.Type,VM.CPU,VM.Memory,VM.createtime,VM.releasetime))
+        gl.get_value('OP').writevm((gl.get_value('NowDate'),VM.name,VM.status,VM.NC.NCid,VM.Type,VM.CPU,VM.Memory,VM.createtime,"\\N" if VM.releasetime == datetime.datetime.strptime("2099-12-31 00:00:00",'%Y-%m-%d %H:%M:%S').date() else VM.releasetime))
+        gl.set_value('TodayEarnMoney',gl.get_value('TodayEarnMoney')+VM.Income)
 
     def Classify_ecs(self,EcsList):
         # 判断虚拟机型号，设定不同的物理主机
@@ -245,9 +297,10 @@ class NCPool:
 
         CPUPercent = self.NCResource["NT-1-4"]["CanUseCPU"] / self.NCResource["NT-1-4"]["TotalCPU"]
         MemPercent = self.NCResource["NT-1-4"]["CanUseMemory"] / self.NCResource["NT-1-4"]["TotalMemory"]
-        Percent.append(self.PercentTrans((CPUPercent*MemPercent)))
-        Percent.append(self.PercentTrans((CPUPercent*MemPercent)))
-        Percent.append(self.PercentTrans((CPUPercent*MemPercent)))
+        A,B,C = self.cal_NT4_Want()
+        Percent.append(self.PercentTrans((CPUPercent*MemPercent))*A)
+        Percent.append(self.PercentTrans((CPUPercent*MemPercent))*B)
+        Percent.append(self.PercentTrans((CPUPercent*MemPercent))*C)
 
         CPUPercent = self.NCResource["NT-1-8"]["CanUseCPU"] / self.NCResource["NT-1-8"]["TotalCPU"]
         MemPercent = self.NCResource["NT-1-8"]["CanUseMemory"] / self.NCResource["NT-1-8"]["TotalMemory"]
@@ -354,7 +407,7 @@ class NCPool:
             self.NewResource["NT-1-2"]["CPU"] = self.NewResource["NT-1-2"]["CPU"] +NewNT.totalCPU
             self.NewResource["NT-1-2"]["Memory"] = self.NewResource["NT-1-2"]["Memory"] +NewNT.totalMemory            
             self.MachineNum = self.MachineNum+1
-            self.CPUNum = self.CPUNum + self.NCResource["NT-1-2"]["TotalCPU"]
+            self.CPUNum = self.CPUNum + NewNT.totalCPU
             gl.get_value('OP').writenewnc((today,NewNT.NCid,NewNT.status,NewNT.totalCPU,NewNT.totalMemory,NewNT.type,NewNT.totalCPU-NewNT.CanUseCPU,NewNT.totalMemory-NewNT.CanUseMemory,NewNT.createTime))
     
     def AddNT2(self,today,num):
@@ -367,7 +420,7 @@ class NCPool:
             self.NewResource["NT-1-4"]["CPU"] = self.NewResource["NT-1-4"]["CPU"] +NewNT.totalCPU
             self.NewResource["NT-1-4"]["Memory"] = self.NewResource["NT-1-4"]["Memory"] +NewNT.totalMemory
             self.MachineNum = self.MachineNum+1
-            self.CPUNum = self.CPUNum + self.NCResource["NT-1-4"]["TotalCPU"]
+            self.CPUNum = self.CPUNum + NewNT.totalCPU
             gl.get_value('OP').writenewnc((today,NewNT.NCid,NewNT.status,NewNT.totalCPU,NewNT.totalMemory,NewNT.type,NewNT.totalCPU-NewNT.CanUseCPU,NewNT.totalMemory-NewNT.CanUseMemory,NewNT.createTime))
     
     
@@ -381,7 +434,7 @@ class NCPool:
             self.NewResource["NT-1-8"]["CPU"] = self.NewResource["NT-1-8"]["CPU"] +NewNT.totalCPU
             self.NewResource["NT-1-8"]["Memory"] = self.NewResource["NT-1-8"]["Memory"] +NewNT.totalMemory
             self.MachineNum = self.MachineNum+1
-            self.CPUNum = self.CPUNum + self.NCResource["NT-1-8"]["TotalCPU"]
+            self.CPUNum = self.CPUNum + NewNT.totalCPU
             gl.get_value('OP').writenewnc((today,NewNT.NCid,NewNT.status,NewNT.totalCPU,NewNT.totalMemory,NewNT.type,NewNT.totalCPU-NewNT.CanUseCPU,NewNT.totalMemory-NewNT.CanUseMemory,NewNT.createTime))
     
     
@@ -401,3 +454,19 @@ class NCPool:
             self.NewResource[NC.type]["Memory"] = self.NewResource[NC.type]["Memory"] - NC.totalMemory
             self.Pool[NC.type].append(NC)
             self.NewBuyList.remove(NC)
+
+    def cal_NT4_Want(self):
+        A = 0
+        B = 0
+        C = 0
+        for NC in self.Pool["NT-1-4"]:
+            A = A + NC.wantANum
+            B = B + NC.wantBNum
+            C = C + NC.wantCNum
+        if A<1:
+            A = 1
+        if B<1:
+            B = 1
+        if C<1:
+            C = 1
+        return A,B,C
