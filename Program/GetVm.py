@@ -5,17 +5,17 @@ import json
 from datetime import datetime
 from Config import Config
 from Vm import Vm
+import globalvar as gl
 
 class GetVm:
     def __init__(self, Files):
-        Conf = Config("./config.json")
         self.starttime = None
         self.Files = Files
         self.result = None
         self.readNewFile()
     
     def IsListNULL(self):
-        if len(self.result)>0 and len(self.Files) > 0:
+        if (gl.get_value("LastDate") == None) or len(self.result)>0 and len(self.Files) > 0:
             return False
         return True
 
@@ -35,6 +35,10 @@ class GetVm:
                         self.result.append({"vmid":item[0],"vmtype":item[1],"createtime":(datetime.strptime(item[2], "%Y-%m-%d").date()),"releasetime":datetime.strptime("2099-12-31 00:00:00",'%Y-%m-%d %H:%M:%S').date(),"AType":"","BType":0})
                     else:
                         self.result.append({"vmid":item[0],"vmtype":item[1],"createtime":(datetime.strptime(item[2], "%Y-%m-%d").date()),"releasetime":(datetime.strptime(item[3], "%Y-%m-%d").date()),"AType":"","BType":0})
+                        if gl.get_value('LastDate') == None:
+                            gl.set_value('LastDate',datetime.strptime(item[3], "%Y-%m-%d").date())
+                        elif gl.get_value('LastDate') < datetime.strptime(item[3], "%Y-%m-%d").date():
+                            gl.set_value('LastDate',datetime.strptime(item[3], "%Y-%m-%d").date())
             self.Files.remove(self.Files[0])
             return True
         else:
