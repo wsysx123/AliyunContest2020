@@ -11,11 +11,12 @@ import globalvar as gl
 
 class Schedule:
     def __init__(self,Files):
+        gl._init()        
         self.NewVm = GetVm(Files)
-        gl._init()
         gl.set_value('NowDate',self.NewVm.starttime)
         #gl.set_value('Debug',True)
         gl.set_value('OP',writeCsv())
+        gl.set_value('LastDate',None)
         self.NCPool = NCPool(gl.get_value('NowDate'))
         self.VQ = VmQueue()        
         self.AllCPUCost = 0
@@ -26,7 +27,7 @@ class Schedule:
         self.AllBuyServerCost = 0
 
     def run(self):
-        while self.NewVm.IsListNULL()==False:            
+        while self.NewVm.IsListNULL()==False or gl.get_value('NowDate') <= gl.get_value('LastDate') :            
             print("Now Date:"+str(gl.get_value('NowDate')))
             gl.set_value('TodayEarnMoney',0)
             self.NCPool.StartTodayNC(gl.get_value('NowDate'))           # 开启新的物理主机    
