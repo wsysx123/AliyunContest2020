@@ -22,22 +22,22 @@ class Schedule:
         self.AllBuyCost = 0
         self.AllLoseCost = 0
         self.NowMachineNum = 0
-        self.TodayEarnMoney = 0
         self.AllEarnMoney = 0
         self.AllBuyServerCost = 0
 
     def run(self):
         while self.NewVm.IsListNULL()==False:            
             print("Now Date:"+str(gl.get_value('NowDate')))
-            self.NCPool.StartTodayNC(gl.get_value('NowDate'))  # 开启新的物理主机    
-            self.NCPool.UpdateNCCanUseSum() # 更新当前的可用资源数据   
-            self.NCPool.SortPool()
-            self.AcceptNewECS()             # 处理新的虚拟主机
-            self.ReleaseTodayECS()          # 释放虚拟主机
-            self.AllEarnMoney = self.AllEarnMoney + self.TodayEarnMoney # 总收益
-            self.AddNC()           # 报备主机
-            self.Cal_Day_Money()            # 计算金额,要放在报备后面，否则今日新报备主机的运营费用会减小
-            self.WriteAllECSLog()  # 输出文件
+            gl.set_value('TodayEarnMoney',0)
+            self.NCPool.StartTodayNC(gl.get_value('NowDate'))           # 开启新的物理主机    
+            self.NCPool.UpdateNCCanUseSum()                             # 更新当前的可用资源数据   
+            #self.NCPool.SortPool()
+            self.AcceptNewECS()                                         # 处理新的虚拟主机
+            self.ReleaseTodayECS()                                      # 释放虚拟主机
+            self.AllEarnMoney = self.AllEarnMoney + gl.get_value('TodayEarnMoney') # 总收益
+            self.AddNC()                                                # 报备主机
+            self.Cal_Day_Money()                    # 计算金额,要放在报备后面，否则今日新报备主机的运营费用会减小
+            self.WriteAllECSLog()                                       # 输出文件
             gl.set_value('NowDate',gl.get_value('NowDate')+datetime.timedelta(days=1))
         Final = self.AllEarnMoney - self.AllCPUCost - self.AllBuyCost - self.AllLoseCost
         info1 = " Maintenance Cost\t Freight Cost \t Lose Cost \t Income \t Profit"
@@ -79,12 +79,13 @@ class Schedule:
         loseVm = []
         # 依次给每个机器安排资源
         for NewECS in EcsListTmp:
-            NewVM,EarnMoney = self.NCPool.create1Vm(NewECS,DisAns)#给这一块ECS分配内存
-            self.TodayEarnMoney = self.TodayEarnMoney + EarnMoney
+            NewVM = self.NCPool.create1Vm(NewECS,DisAns)#给这一块ECS分配内存
+            
             if NewVM != None:
                 if NewVM.status == "running":#可以分配成功，计算收益
                     #self.gl.get_value('OP')writevm((gl.get_value('NowDate'),NewVM.name,NewVM.status,NewVM.NC.NCid,NewVM.Type,NewVM.CPU,NewVM.Memory,NewVM.createtime,NewVM.releasetime))
                     gl.get_value('OP').writevm((gl.get_value('NowDate'),NewVM.name,NewVM.status,NewVM.NC.NCid,NewVM.Type,NewVM.CPU,NewVM.Memory,NewVM.createtime,"\\N" if NewVM.releasetime == datetime.datetime.strptime("2099-12-31 00:00:00",'%Y-%m-%d %H:%M:%S').date() else NewVM.releasetime))
+                    gl.set_value('TodayEarnMoney',gl.get_value('TodayEarnMoney')+NewVM.Income)
                 else:#分配不成功，直接输出，正式答案里不输出
                     #self.VQ.delete(NewVM)#从现存队列中删除,删除以后队列自动向前移动，会漏数据
                     loseVm.append(NewVM)
